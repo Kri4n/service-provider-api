@@ -1,0 +1,11 @@
+services:
+  - type: web
+    name: service-provider-server
+    env: docker
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: PORT
+        value: 3000
+      - key: NODE_ENV
+        value: production
