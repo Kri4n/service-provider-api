@@ -12,6 +12,10 @@ const getAllUsers = async () => {
   return await User.findAll();
 };
 
+const countAllUsers = async () => {
+  return await User.count();
+};
+
 const updateUserStatus = async (id, status) => {
   await User.update({ status }, { where: { id } });
   return await User.findByPk(id);
@@ -37,5 +41,6 @@ module.exports = {
   getAllUsers,
   updateUserStatus,
   getApprovedUsers,
+  countAllUsers,
   filterByRole,
 };

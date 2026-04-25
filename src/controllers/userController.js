@@ -1,6 +1,15 @@
 const bcrypt = require("bcryptjs");
 const userRepository = require("../repositories/userRepository");
 const { generateToken } = require("../utils/jwt");
+const { getCache, setCache } = require("../utils/cache");
+
+const CACHE_KEYS = {
+  ALL_REGISTRATIONS: "users:registrations",
+  ALL_USERS: "users:all",
+  APPROVED_USERS: "users:approved",
+  COUNT: "users:count",
+  BY_ROLE: (role) => `users:role:${role}`,
+};
 
 const register = async (req, res, next) => {
   try {
@@ -169,11 +178,69 @@ const filterByRole = async (req, res, next) => {
   }
 };
 
+const getAllUsers = async (req, res, next) => {
+  try {
+    const cached = await getCache(CACHE_KEYS.ALL_USERS);
+    if (cached) {
+      console.log("Cache hit for all users");
+      return res.status(200).json({
+        success: true,
+        fromCache: true,
+        message: "All users fetched successfully",
+        data: cached,
+      });
+    }
+
+    console.log("Cache miss for all users, fetching from database...");
+
+    const users = await userRepository.getAllUsers();
+    await setCache(CACHE_KEYS.ALL_USERS, users, 10);
+
+    res.status(200).json({
+      success: true,
+      message: "All users fetched successfully",
+      data: users,
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
+const countAllUsers = async (req, res, next) => {
+  try {
+    const cached = await getCache(CACHE_KEYS.COUNT);
+    if (cached) {
+      console.log("Cache hit for user count");
+      return res.status(200).json({
+        success: true,
+        fromCache: true,
+        message: "Total users fetched successfully",
+        data: cached,
+      });
+    }
+
+    console.log("Cache miss for user count, fetching from database...");
+
+    const users = await userRepository.countAllUsers();
+    await setCache(CACHE_KEYS.COUNT, users, 5);
+
+    res.status(200).json({
+      success: true,
+      message: "Total users fetched successfully",
+      data: users,
+    });
+  } catch (err) {
+    next(err);
+  }
+};
+
 module.exports = {
   register,
   login,
   getAllRegistrations,
   updateUserStatus,
   getApprovedUsers,
+  getAllUsers,
+  countAllUsers,
   filterByRole,
 };

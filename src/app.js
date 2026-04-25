@@ -5,6 +5,7 @@ const { sequelize } = require("./models");
 const cors = require("cors");
 const errorHandler = require("./middlewares/errorHandler");
 const app = express();
+const { connectRedis } = require("./config/redis");
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -25,9 +26,10 @@ const PORT = process.env.PORT;
 // synchronize models before starting server
 sequelize
   .sync()
-  .then(() => {
+  .then(async () => {
+    await connectRedis();
     app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
   })
   .catch((err) => {
-    console.error("Unable to start server, sequelize sync failed:", err);
+    console.error("Unable to start server", err);
   });

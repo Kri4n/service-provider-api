@@ -10,6 +10,9 @@ const authorize = require("../middlewares/authorizeRole");
 router.post("/register", validateRegister, userController.register);
 router.post("/login", validateLogin, userController.login);
 
+router.get("/all-users", userController.getAllUsers);
+router.get("/count", userController.countAllUsers);
+
 // Admin only
 router.get(
   "/all-registrations",
